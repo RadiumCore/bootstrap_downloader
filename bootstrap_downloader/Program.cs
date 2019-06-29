@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using static System.Environment;
@@ -49,19 +50,30 @@ namespace RadiumBootstrapper
         /// standard chunck size, set to 2mb
         /// </summary>
         static int  chunk_size = 2097152;
+
+        static bool windows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        static bool linux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
         /// <summary>
         /// location of the radium blockchain
         /// </summary>
-        static string blockchain_location = GetFolderPath(SpecialFolder.ApplicationData) + "/Radium";
+        static string blockchain_location;
         static void Main(string[] args)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            Console.WriteLine("Hello World!");
+            if(windows)
+                blockchain_location = GetFolderPath(SpecialFolder.ApplicationData) + "/Radium";
+            if(linux)
+                blockchain_location = GetFolderPath(SpecialFolder.UserProfile) + "/.radium";
             update_local();
         }
 
         static void update_local()
         {
+            Console.WriteLine("data location set to " + blockchain_location);
+            if (windows)
+                Console.WriteLine("OS Windows");
+            if (linux)
+                Console.WriteLine("OS Linux");
             Console.WriteLine("****************************************************************");
             Console.WriteLine("******         Radium Bootstrap Update Utility            ******");
             Console.WriteLine("******                                                    ******");
@@ -75,7 +87,11 @@ namespace RadiumBootstrapper
             Console.WriteLine("******                                                    ******");
             Console.WriteLine("******           Press the Y key to continue              ******");
             Console.WriteLine("******         Press the any other key to exit            ******");
+            Console.WriteLine("******                                                    ******");
+            Console.WriteLine("******                                                    ******");
+            Console.WriteLine("******                                                    ******");
             Console.WriteLine("****************************************************************");
+            
 
             if (Console.ReadKey().Key != ConsoleKey.Y)
             {
