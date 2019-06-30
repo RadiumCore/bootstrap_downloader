@@ -1,4 +1,4 @@
-﻿using Ionic.Zip;
+using Ionic.Zip;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -53,6 +53,7 @@ namespace RadiumBootstrapper
 
         static bool windows = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         static bool linux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+        static bool osx = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
         /// <summary>
         /// location of the radium blockchain
         /// </summary>
@@ -62,8 +63,10 @@ namespace RadiumBootstrapper
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             if(windows)
                 blockchain_location = GetFolderPath(SpecialFolder.ApplicationData) + "/Radium";
-            if(linux)
+            if (linux)
                 blockchain_location = GetFolderPath(SpecialFolder.UserProfile) + "/.radium";
+            if (osx)
+                blockchain_location = "~/Library/Application Support/radium";
             update_local();
         }
 
