@@ -1,4 +1,4 @@
-using Ionic.Zip;
+﻿using Ionic.Zip;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -108,6 +108,7 @@ namespace RadiumBootstrapper
                 Environment.Exit(0);
 
             }
+            Console.SetCursorPosition(0, Console.CursorTop);
             build_appdata_blk001_chunk_list();
             build_appdata_bootstrap_dat_chunk_list();
             build_appdata_bootstrap_dat_old_chunk_list();
@@ -126,25 +127,20 @@ namespace RadiumBootstrapper
         static void build_appdata_blk001_chunk_list()
         {
             appdata_blk001_chuncks_list.Clear();
-            Console.Write("Indexing existing blockchain......");
             String file_path = blockchain_location + "/blk0001.dat";
-            appdata_blk001_chuncks_list = List_Builder(file_path, "Indexing existing blockchain");
+            appdata_blk001_chuncks_list = List_Builder(file_path, "Indexing local blockchain, stage 1 of 3...");
         }
         static void build_appdata_bootstrap_dat_chunk_list()
         {
             appdata_bootstrap_dat_chuncks_list.Clear();
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write("Indexing existing bootstrap.dat...");
             String file_path = blockchain_location + "/bootstrap.dat";
-            appdata_bootstrap_dat_chuncks_list = List_Builder(file_path, "Indexing existing bootstrap.dat");
+            appdata_bootstrap_dat_chuncks_list = List_Builder(file_path, "Indexing local blockchain, stage 2 of 3...");
         }
         static void build_appdata_bootstrap_dat_old_chunk_list()
         {
             appdata_bootstrap_dat_old_chuncks_list.Clear();
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write("Indexing existing bootstrap.dat.old...");
             String file_path = blockchain_location + "/bootstrap.dat.old";
-            appdata_bootstrap_dat_old_chuncks_list = List_Builder(file_path, "Indexing existing bootstrap.dat.old");
+            appdata_bootstrap_dat_old_chuncks_list = List_Builder(file_path, "Indexing local blockchain, stage 3 of 3...");
         }
         static void build_remote_git_file_list()
         {
@@ -158,7 +154,7 @@ namespace RadiumBootstrapper
                     continue;
                 remote_git_chunk_list.Add(chunk["name"].ToString().Remove(chunk["name"].ToString().Length - 4), "");
                 Console.SetCursorPosition(0, Console.CursorTop);
-                Console.Write("Indexing remote git files.......{0} of {1}", remote_git_chunk_list.Count, repo.Count);
+                Console.Write("Indexing remote git files....................processing file {0} of {1}", remote_git_chunk_list.Count, repo.Count);
 
 
             }
@@ -167,7 +163,7 @@ namespace RadiumBootstrapper
         }
         static void build_required_chunk_list()
         {
-            Console.Write("Building work list...{0} to copy, {1} to download");
+            
             int to_copy = 0;
             int to_download = 0;
 
@@ -195,10 +191,10 @@ namespace RadiumBootstrapper
                 to_download += 1;
                 to_download_chunks.Add(remote_chunk, "");
                 Console.SetCursorPosition(0, Console.CursorTop);
-                Console.Write("Building worklist.......{0} to copy, {1} to download", to_copy, to_download);
+                Console.Write("Building worklist.......{0} local chunks to copy, {1} to download", to_copy, to_download);
             }
             Console.SetCursorPosition(0, Console.CursorTop);
-            Console.WriteLine("Building worklist.......{0} to copy, {1} to download. COMPLETE!", to_copy, to_download);
+            Console.WriteLine("Building worklist.......{0} local chunks to copy, {1} to download. COMPLETE!", to_copy, to_download);
 
         }
 
@@ -210,7 +206,7 @@ namespace RadiumBootstrapper
             {
                 int chunk_offset = int.Parse(chunk.ToString().Substring(0, chunk.ToString().IndexOf("_")));
                 Console.SetCursorPosition(0, Console.CursorTop);
-                Console.Write("Copying chunk {0} of {1} {2}", count, to_copy, chunk.ToString());
+                Console.Write("Copying local chunk {0} of {1} {2}", count, to_copy, chunk.ToString());
                 WriteChunk(get_chunk(chunk, "/blk0001.dat"), chunk_offset);
                 count += 1;
 
@@ -226,18 +222,17 @@ namespace RadiumBootstrapper
                 WriteChunk(get_chunk(chunk, "/bootstrap.dat.old"), chunk_offset);
 
             }
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.WriteLine("Copied {0} chunks.................................. COMPLETE!                                             ", count);
+            
             count = 0;
-
-            if (to_copy > to_download_chunks.Count)
+            Console.WriteLine("Copied {0} local chunks.................................. COMPLETE! ", count);
+              if (to_copy > to_download_chunks.Count)
                 return;
 
             foreach (string chunk in to_download_chunks.Keys)
             {
                 int chunk_offset = int.Parse(chunk.ToString().Substring(0, chunk.ToString().IndexOf("_")));
                 Console.SetCursorPosition(0, Console.CursorTop);
-                Console.Write("Downloading chunk {0} of {1} {2}", count, to_download_chunks.Count, chunk.ToString());
+                Console.Write("Downloading remote chunk {0} of {1} {2}", count, to_download_chunks.Count, chunk.ToString());
                 WriteChunk(get_remote_chunk(chunk), chunk_offset);
                 count += 1;
 
@@ -332,14 +327,19 @@ namespace RadiumBootstrapper
 
         static Dictionary<string, string> List_Builder(string filepath, string message)
         {
+            int count = 0;
             Dictionary<string, string> list = new Dictionary<string, string>();
             if (!File.Exists(filepath))
+            {
+                Console.WriteLine(message + "found {0} chunks. COMPLETE!", count);
                 return new Dictionary<string, string>();
+            }
+               
             using (FileStream fs = File.OpenRead(filepath))
             {
                 BigInteger filelength = fs.Length;
                 BigInteger offset = 0;
-                int count = 0;
+                
                 SHA256CryptoServiceProvider md5prov = new SHA256CryptoServiceProvider();
                 string hash;
                 byte[] input;
@@ -352,7 +352,7 @@ namespace RadiumBootstrapper
 
                     Console.CursorVisible = false;
                     Console.SetCursorPosition(0, Console.CursorTop);
-                    Console.Write(message + " ......found {0} chunks so far", count);
+                    Console.Write(message + "found {0} chunks so far", count);
 
                     offset = offset + chunk_size;
                     count += 1;
@@ -363,7 +363,7 @@ namespace RadiumBootstrapper
                 hash = ByteArrayToString(md5prov.ComputeHash(input));
                 list.Add(offset.ToString() + "_" + hash, "");
                 Console.SetCursorPosition(0, Console.CursorTop);
-                Console.WriteLine(message + " ......found {0} chunks. COMPLETE!", count);
+                Console.WriteLine(message + "found {0} chunks. COMPLETE!", count);
 
 
 
