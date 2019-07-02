@@ -258,9 +258,7 @@ namespace RadiumBootstrapper
             //open downloaded file, read it to byte[]
             using (FileStream fs = File.OpenRead(blockchain_location + "/" + chunk))
             {
-                if (fs.Length != chunk_size)
-                    throw new Exception("Bad chunk. Incorrect file length");
-                fs.Read(chunk_bytes, 0, chunk_size);
+                fs.Read(chunk_bytes, 0, (int)fs.Length);
 
             }
 
