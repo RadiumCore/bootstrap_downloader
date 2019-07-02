@@ -225,9 +225,7 @@ namespace RadiumBootstrapper
             
             count = 0;
             Console.WriteLine("Copied {0} local chunks.................................. COMPLETE! ", count);
-              if (to_copy > to_download_chunks.Count)
-                return;
-
+             
             foreach (string chunk in to_download_chunks.Keys)
             {
                 int chunk_offset = int.Parse(chunk.ToString().Substring(0, chunk.ToString().IndexOf("_")));
